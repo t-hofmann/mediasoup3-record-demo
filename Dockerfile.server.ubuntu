@@ -1,0 +1,51 @@
+FROM ubuntu:20.10
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN echo "installing nodejs" \
+    && apt-get update \
+ 	&& apt-get install -y \
+      nodejs \
+      npm \
+   && apt-get autoremove -y \
+ 	&& rm -rf /var/lib/apt/lists/*
+
+RUN echo "installing prerequisites for 'npm install'" \
+    && apt-get update \
+ 	&& apt-get install -y \
+      python2 \
+   && apt-get autoremove -y \
+ 	&& rm -rf /var/lib/apt/lists/*
+
+RUN echo "installing gstreamer" \
+    && apt-get update \
+ 	&& apt-get install -y \
+       gstreamer1.0-alsa \
+       gstreamer1.0-doc \
+       gstreamer1.0-libav \
+       gstreamer1.0-plugins-base \
+       gstreamer1.0-plugins-good \
+       gstreamer1.0-plugins-bad \
+       gstreamer1.0-plugins-ugly \
+       gstreamer1.0-pulseaudio \
+       gstreamer1.0-tools \
+       gstreamer1.0-x \
+       libgstreamer1.0-0 \
+       gstreamer1.0-gl \
+       gstreamer1.0-gtk3 \
+       gstreamer1.0-qt5 \
+    && apt-get autoremove -y \
+ 	&& rm -rf /var/lib/apt/lists/*
+
+COPY src/server /server
+
+WORKDIR /server
+
+RUN npm install
+
+RUN mkdir /recordings
+
+ARG LISTEN_IP
+RUN echo "setting listen IP in /server/src/config.js" \
+	&& sed "s/listenIps.*/listenIps: \[ \{ ip: '$LISTEN_IP', announcedIp: undefined \} \],/" \
+           -i /server/src/config.js

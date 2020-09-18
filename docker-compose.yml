@@ -1,0 +1,36 @@
+version: "3.8"
+
+services:
+  recording-server:
+    build:
+      context: ./
+      dockerfile: Dockerfile.server.ubuntu
+      args:
+        - LISTEN_IP=0.0.0.0
+
+    environment:
+      - RECORD_FILE_LOCATION_PATH=/recordings # string
+      - GSTREAMER_DEBUG_LEVEL=0 # number
+      - PROCESS_NAME=GStreamer # string - to use GStreamer set it to "GStreamer"
+      #- SERVER_PORT # number
+
+    volumes:
+      - ./recordings:/recordings:rw
+
+    network_mode: host
+
+    # ports: // not used because of network_mode: host
+    #   - "3000:3000/tcp"
+    #   - "3000:3000/udp"
+
+    command: node /server/src/server
+
+  recording-app:
+    build:
+      context: ./
+      dockerfile: Dockerfile.app.ubuntu
+
+    ports:
+      - "8080:8080/tcp"  # https
+
+    command: npm run dev
